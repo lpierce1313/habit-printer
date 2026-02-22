@@ -1,3 +1,4 @@
+import React from 'react';
 import { Page, Text, View, Document, StyleSheet } from '@react-pdf/renderer';
 import dayjs from 'dayjs';
 
@@ -50,10 +51,30 @@ const styles = StyleSheet.create({
     borderColor: '#000',
     justifyContent: 'center',
     alignItems: 'center',
+    position: 'relative',
+  },
+  activeIndicator: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: 0,
+    height: 0,
+    borderStyle: 'solid',
+    borderRightWidth: 3,
+    borderTopWidth: 3,
+    borderRightColor: '#000',
+    opacity: 0.8,
+    borderTopColor: 'transparent',
   },
   cellText: {
     fontSize: 7,
     fontWeight: 'bold',
+  },
+  monthText: {
+    fontSize: 4,
+    color: '#666',
+    textTransform: 'uppercase',
+    marginBottom: 1,
   },
   habitName: {
     fontSize: 8,
@@ -80,33 +101,45 @@ interface Habit {
   id: number;
   name: string;
   category: string;
+  frequency: string;
+  customDays: string[];
 }
 
 interface Props {
   habits: Habit[];
   startDate: string;
-  weeks: number; // This is now strictly enforced
+  weeks: number;
 }
 
 export const HabitPDF = ({ habits, startDate, weeks }: Props) => {
   const start = dayjs(startDate);
-  
-  // We strictly limit the columns per page to 4 weeks (28 days)
-  // to prevent the "squashed" UI look.
   const weeksPerPage = 4;
   const pagesCount = Math.ceil(weeks / weeksPerPage);
 
+  // Helper to differentiate similar days
+  const getDayLabel = (day: string) => {
+    switch (day) {
+      case 'tue': return 'T';
+      case 'thu': return 'Th';
+      case 'sat': return 'S';
+      case 'sun': return 'Su';
+      default: return day.charAt(0).toUpperCase();
+    }
+  };
+
   const renderPage = (pageIndex: number) => {
-    // Determine how many weeks belong on THIS specific page
     const startWeekOfPage = pageIndex * weeksPerPage;
     const weeksOnThisPage = Math.min(weeksPerPage, weeks - startWeekOfPage);
     const daysInThisPage = weeksOnThisPage * 7;
     
     const dayLabels = Array.from({ length: daysInThisPage }).map((_, i) => {
       const currentDay = start.add((startWeekOfPage * 7) + i, 'day');
+      const dayKey = currentDay.format('ddd').toLowerCase();
       return {
         num: currentDay.format('D'),
-        label: currentDay.format('dd').charAt(0),
+        month: currentDay.format('MMM'),
+        label: getDayLabel(dayKey),
+        dayKey: dayKey,
         isWeekend: currentDay.day() === 0 || currentDay.day() === 6
       };
     });
@@ -121,8 +154,7 @@ export const HabitPDF = ({ habits, startDate, weeks }: Props) => {
         </View>
 
         <View style={styles.table}>
-          {/* Header Row */}
-          <View style={[styles.tableRow, { backgroundColor: '#f0f0f0', minHeight: 25 }]}>
+          <View style={[styles.tableRow, { backgroundColor: '#f0f0f0', minHeight: 30 }]}>
             <View style={styles.tableColHeader}>
               <Text style={styles.cellText}>TASK / HABIT</Text>
             </View>
@@ -131,22 +163,30 @@ export const HabitPDF = ({ habits, startDate, weeks }: Props) => {
                 key={i} 
                 style={[styles.dayCol, { backgroundColor: day.isWeekend ? '#e8e8e8' : 'transparent' }]}
               >
+                <Text style={styles.monthText}>{day.month}</Text>
                 <Text style={styles.cellText}>{day.label}</Text>
                 <Text style={[styles.cellText, { fontSize: 5 }]}>{day.num}</Text>
               </View>
             ))}
           </View>
 
-          {/* Habit Rows */}
           {habits.map((habit) => (
             <View style={styles.tableRow} key={habit.id}>
               <View style={styles.tableColHeader}>
                 <Text style={styles.categoryText}>{habit.category}</Text>
                 <Text style={styles.habitName}>{habit.name}</Text>
               </View>
-              {dayLabels.map((_, i) => (
-                <View key={i} style={styles.dayCol} />
-              ))}
+              {dayLabels.map((day, i) => {
+                const isActive = 
+                  habit.frequency === 'Everyday' || 
+                  (habit.frequency === 'Custom' && habit.customDays.includes(day.dayKey));
+
+                return (
+                  <View key={i} style={styles.dayCol}>
+                    {isActive && <View style={styles.activeIndicator} />}
+                  </View>
+                );
+              })}
             </View>
           ))}
         </View>
