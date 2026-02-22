@@ -133,7 +133,7 @@ export default function HabitApp() {
               </Stack>
             </Paper>
 
-            <Typography variant="caption" color="text.secondary" fontWeight="700" sx={{ mb: 1, px: 1 }}>YOUR STACK</Typography>
+            <Typography variant="caption" color="text.secondary" fontWeight="700" sx={{ mb: 1, px: 1 }}>YOUR TASKS</Typography>
             <Box sx={{ flexGrow: 1, overflowY: 'auto', pr: 1, mb: 2 }}>
               <Stack spacing={1}>
                 {habits.map(h => (
