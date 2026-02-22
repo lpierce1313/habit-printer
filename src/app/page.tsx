@@ -124,19 +124,25 @@ export default function HabitApp() {
       <ThemeProvider theme={darkTheme}>
         <CssBaseline />
 
-        {/* Main Wrapper: flex-column fills the viewport */}
-        <Box sx={{ height: '100dvh', display: 'flex', flexDirection: 'column', bgcolor: 'background.default' }}>
+        {/* Main Wrapper: Updated height to account for navbar */}
+        <Box sx={{ 
+          height: 'calc(100dvh - 65px)', // Subtract Navbar height
+          display: 'flex', 
+          flexDirection: 'column', 
+          bgcolor: 'background.default' 
+        }}>
 
           <Container maxWidth="sm" sx={{
             flex: 1,
             display: 'flex',
             flexDirection: 'column',
             p: 1.5,
+            pb: 1, // Slight bottom padding to avoid touching the navbar
             gap: 1.5,
-            overflow: 'hidden' // Prevents whole page from scrolling
+            overflow: 'hidden'
           }}>
 
-            {/* HEADER (Non-Shrinking) */}
+            {/* HEADER */}
             <Box sx={{ flexShrink: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Typography variant="h5" fontWeight="900" sx={{ letterSpacing: -1, color: 'primary.main' }}>Your Tasks.</Typography>
               <Box>
@@ -145,7 +151,7 @@ export default function HabitApp() {
               </Box>
             </Box>
 
-            {/* FORM AREA (Non-Shrinking) */}
+            {/* FORM AREA */}
             <Paper variant="outlined" sx={{ p: 2, borderRadius: 3, borderColor: '#222', flexShrink: 0 }}>
               <Stack spacing={1.5}>
                 <TextField
@@ -201,7 +207,7 @@ export default function HabitApp() {
               </Stack>
             </Paper>
 
-            {/* TASK LIST (EXPANDS TO FILL REMAINING SPACE) */}
+            {/* TASK LIST (SCROLLABLE) */}
             <Box sx={{ flexGrow: 1, overflowY: 'auto', pr: 0.5 }}>
               <Stack spacing={1}>
                 {habits.map(h => (
@@ -221,14 +227,13 @@ export default function HabitApp() {
               </Stack>
             </Box>
 
-            {/* EXPORT AREA (Non-Shrinking, Fixed at Bottom) */}
+            {/* EXPORT AREA (PINNED ABOVE NAVBAR) */}
             <Box sx={{ flexShrink: 0, p: 2, bgcolor: '#141416', borderRadius: 4, border: '1px solid #222' }}>
               <Stack spacing={1.5}>
                 <Stack direction="row" spacing={2} alignItems="flex-end">
                   <Box sx={{ flex: 0.5 }}>
                     <TextField
                       label="NAME"
-                      defaultValue="Planner"
                       value={exportName} onChange={e => setExportName(e.target.value)}
                       InputLabelProps={{ sx: { fontSize: '0.65rem' } }}
                     />
@@ -273,7 +278,7 @@ export default function HabitApp() {
           </Container>
         </Box>
 
-        {/* HISTORY MODAL */}
+        {/* Modal remains the same */}
         <Modal open={historyModalOpen} onClose={() => setHistoryModalOpen(false)}>
           <Box sx={{
             position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
@@ -313,7 +318,6 @@ export default function HabitApp() {
             <Button fullWidth sx={{ mt: 2 }} color="inherit" onClick={() => { if (confirm("Clear history?")) setHistory([]); }}>Clear All</Button>
           </Box>
         </Modal>
-
       </ThemeProvider>
     </LocalizationProvider>
   );
